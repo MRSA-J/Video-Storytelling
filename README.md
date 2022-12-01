@@ -10,8 +10,7 @@ We are trying to solve a video-caption problem which specifically focuses on a c
 - [MMAC captions dataset introduction paper](https://dl.acm.org/doi/pdf/10.1145/3474085.3475557)
 - [VideoBERT: A Joint Model for Video and Language Representation Learning](https://arxiv.org/pdf/1904.01766v2.pdf)
 - [UniVL: A Unified Video and Language Pre-Training Model for
-Multimodal Understanding and Generation]
-(https://arxiv.org/pdf/2002.06353v3.pdf)
+Multimodal Understanding and Generation](https://arxiv.org/pdf/2002.06353v3.pdf)
 
 ### Data
 [MMAC captions dataset ](https://github.com/hitachi-rd-cv/mmac_captions)  <br>
@@ -56,6 +55,13 @@ In this project, we aim at generating high-quality, articulated text description
 Deep learning is currently the most popular and accurate method for computer vision/natural language processing. As for video understanding, by using neural networks with convolutional/attention, the model can learn effective representation. In addition, deep learning methods can achieve end-to-end modeling and are more flexible than traditional methods that usually use handcrafted features (lacking generalizability to  other datasets). 
 
 
-### Division of labor
-- ...
-- ...
+### Division of labor  (we will finalize this after talking to TA)
+We plan on working equally across X aspects of the project:
+1. Preprocess the data: Yuan Zang
+2. Model Architecture (we will finalize this after talking to TA) - 2 encoders below form a video encoder: 
+  - a 3d-CNN-based image encoder (to get C3D features): Chen Wei
+  - a Transformer-based encoder: Yunhao Luo
+  - LSTM or Transformer-decoder: Yuan Zang
+3. Fine-tuning, Evaluation and Visualization: Together
+4. Ablation study (maybe)
+5. Write the report and make the poster: Together
