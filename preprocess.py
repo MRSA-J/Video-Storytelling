@@ -48,6 +48,9 @@ def build_dataset():
     assert len(all_images)==len(all_captions)
     with open('save_dataset.pkl','wb') as fw:
         pickle.dump((all_images,all_captions),fw)
+    all_images_mean = torch.mean(all_images,dim=1)
+    with open('save_dataset_mean.pkl','wb') as fw:
+        pickle.dump((all_images_mean,all_captions),fw)
 build_dataset()
 
 
