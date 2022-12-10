@@ -12,7 +12,7 @@ Download both the `Microsoft Research Video Description Corpus` and `YouTubeClip
 #### Form
 The Video is named using its id: For example: `-4wsuPCjDBc_5_15` where `_5_15` means from the 5th second to the 10th second
 
-The Description txt is in the following form:
+The Description txt is in the following form: <br>
 -4wsuPCjDBc_5_15 a squirrel is eating a peanut in it's shell <br>
 -4wsuPCjDBc_5_15 a chipmunk is eating <br>
 -4wsuPCjDBc_5_15 a chipmunk is eating a peanut <br>
