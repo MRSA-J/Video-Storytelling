@@ -11,8 +11,8 @@ import re
 import pickle
 import random
 
-# Todo: add non-gpu friendly code
-device=torch.device('cuda:0')
+# device=torch.device('cuda:0')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 clip_model, preprocesser = clip.load("ViT-B/32", device=device, jit=False)
 CAPTION_PATH = './data/AllVideoDescriptions.txt'
 
@@ -33,7 +33,7 @@ def align_video_with_caption(video_name, all_captions, preprocesser):
 
     images = torch.cat(images, dim=0)
     captions = all_captions[video_name]
-    return images,captions
+    return images, captions
 
 # Brute Force: Simply convert video to 1 image frame (we will analyze it in our report why this makes sense).
 def video_to_single_caption(video_name, all_captions, preprocesser):
@@ -49,7 +49,6 @@ def video_to_single_caption(video_name, all_captions, preprocesser):
 
     with torch.no_grad():
         image_encoding = clip_model.encode_image(image).cpu()
-
     captions = all_captions[video_name]
     return image_encoding, captions
 
@@ -57,7 +56,8 @@ def video_to_single_caption(video_name, all_captions, preprocesser):
 def build_caption_dict():
     cap_dict = {}
     with open(CAPTION_PATH,'r') as f:
-        ls = f.readlines()
+        # remove the headers
+        ls = f.readlines()[7:]
         for l in tqdm(ls):
             l = l.strip().split()
             video_name=l[0]
@@ -80,7 +80,7 @@ def build_dataset():
         all_images.append(images)
         all_captions.append(captions)
         # Create (video -> single image, caption list) dataset
-        single_image, captions = video_to_single_caption(video_name, all_captions, preprocesser)
+        single_image, captions = video_to_single_caption(video_name, all_cap_dict, preprocesser)
         video_single_images.append(single_image)
 
     assert len(all_images)==len(all_captions)
@@ -89,7 +89,7 @@ def build_dataset():
         pickle.dump((all_images, all_captions),fw)
 
     # The method to take means of all the images
-    all_images_mean = torch.mean(all_images, dim=1)
+    all_images_mean = torch.mean(torch.concat(all_images, dim=0), dim=0)
     with open('save_dataset_mean.pkl', 'wb') as fw:
         pickle.dump((all_images_mean, all_captions),fw)
     # Video -> Single image, Caption List dataset
