@@ -363,6 +363,7 @@ def main():
                                   num_layers=args.num_layers, mapping_type=args.mapping_type)
         print("Train both prefix and GPT")
         sys.stdout.flush()
+    #train
     train(dataset, model, args, output_dir=args.out_dir, output_prefix=args.prefix)
 
 
