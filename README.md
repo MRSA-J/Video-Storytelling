@@ -13,13 +13,13 @@ Download both the `Microsoft Research Video Description Corpus` and `YouTubeClip
 The Video is named using its id: For example: `-4wsuPCjDBc_5_15` where `_5_15` means from the 5th second to the 10th second
 
 The Description txt is in the following form:
--4wsuPCjDBc_5_15 a squirrel is eating a peanut in it's shell
--4wsuPCjDBc_5_15 a chipmunk is eating
--4wsuPCjDBc_5_15 a chipmunk is eating a peanut
--4wsuPCjDBc_5_15 a chipmunk is eating a nut
--4wsuPCjDBc_5_15 a squirrel is eating a nut
--4wsuPCjDBc_5_15 a squirrel is eating a whole peanut
--4wsuPCjDBc_5_15 a squirrel is eating a peanut
+-4wsuPCjDBc_5_15 a squirrel is eating a peanut in it's shell <br>
+-4wsuPCjDBc_5_15 a chipmunk is eating <br>
+-4wsuPCjDBc_5_15 a chipmunk is eating a peanut <br>
+-4wsuPCjDBc_5_15 a chipmunk is eating a nut <br>
+-4wsuPCjDBc_5_15 a squirrel is eating a nut <br>
+-4wsuPCjDBc_5_15 a squirrel is eating a whole peanut <br>
+-4wsuPCjDBc_5_15 a squirrel is eating a peanut <br>
 ...
 
 With the `-4wsuPCjDBc_5_15` being the video id and `a squirrel is eating a peanut in its shell` being the description. Since the captions all have similar meanings, this task is more like a video caption task instead of a storytelling one.
@@ -48,8 +48,8 @@ Chen Wei (cwei24), Yuan Zang (yzang6), Yunhao Luo (yluo73)
 
 ### Division of labor 
 We plan on working equally across X aspects of the project:
-1. Preprocess the data: Yuan Zang
-2. Model Architecture (we will finalize this after talking to TA) - 2 encoders below form a video encoder: 
+1. Preprocess the data: Chen Wei, Yuan Zang
+2. Model Architecture - 2 encoders below form a video encoder: 
   - a 3d-CNN-based image encoder (to get C3D features): Chen Wei
   - a Transformer-based encoder: Yunhao Luo
   - LSTM or Transformer-decoder: Yuan Zang
