@@ -1,46 +1,41 @@
-### WeCook - a  Video StoryTelling model to guide cooking
+### About Life -  a  Video StoryTelling model to extract people's daily activity
 
-### Team Member
-Chen Wei (cwei24), Yuan Zang (yzang6), Yunhao Luo (yluo73)
+### Description
+Video Description/Storytelling is a complicated task. For this final project, we are trying to solve a video-caption problem which specifically focuses on people's daily activities.
+Our original plan was to focus on cooking activity - caption paring dataset and generate a cooking guide from that dataset. But after we realize that that dataset is really hard to be preprocessed as well as with the previous work related to it is very little, we switch to this [people's daily activities video caption pairing dataset](https://www.cs.utexas.edu/users/ml/clamp/videoDescription/).
 
-### Introduction
-We are trying to solve a video-caption problem which specifically focuses on a cooking activity - caption paring dataset.
+### DataSet
+[YouTubeClips dataset](https://www.cs.utexas.edu/users/ml/clamp/videoDescription/)
 
-### Related Work
-- [MMAC captions dataset introduction paper](https://dl.acm.org/doi/pdf/10.1145/3474085.3475557)
-- [VideoBERT: A Joint Model for Video and Language Representation Learning](https://arxiv.org/pdf/1904.01766v2.pdf)
-- [UniVL: A Unified Video and Language Pre-Training Model for
-Multimodal Understanding and Generation](https://arxiv.org/pdf/2002.06353v3.pdf)
+Download both the `Microsoft Research Video Description Corpus` and `YouTubeClips.tar` from the above link.
 
-### Data
-[MMAC captions dataset ](https://github.com/hitachi-rd-cv/mmac_captions)  <br>
-MMAC dataset is a dataset for sensor-augmented egocentric-video captioning. This dataset contains 5,002 activity descriptions. <br>
+#### Form
+The Video is named using its id: For example: `-4wsuPCjDBc_5_15` where `_5_15` means from the 5th second to the 10th second
 
-Samples: <br>
-![](https://raw.githubusercontent.com/hitachi-rd-cv/mmac_captions/main/.github/MMAC_Captions.jpg)
+The Description txt is in the following form: <br>
+-4wsuPCjDBc_5_15 a squirrel is eating a peanut in it's shell <br>
+-4wsuPCjDBc_5_15 a chipmunk is eating <br>
+-4wsuPCjDBc_5_15 a chipmunk is eating a peanut <br>
+-4wsuPCjDBc_5_15 a chipmunk is eating a nut <br>
+-4wsuPCjDBc_5_15 a squirrel is eating a nut <br>
+-4wsuPCjDBc_5_15 a squirrel is eating a whole peanut <br>
+-4wsuPCjDBc_5_15 a squirrel is eating a peanut <br>
+...
 
-- Spreading tomato sauce on pizza crust with a spoon.
-- Taking a fork, knife, and peeler from a drawer.
-- Cutting a zucchini in half with a kitchen knife.
-- Moving a paper plate slightly to the left.
-- Stirring brownie batter with a fork.
+With the `-4wsuPCjDBc_5_15` being the video id and `a squirrel is eating a peanut in its shell` being the description. Since the captions all have similar meanings, this task is more like a video caption task instead of a storytelling one.
 
-##### Training/Validation/Test split
-- Training: 2923
-- Validation: 838
-- Test:1241
 
-The given dataset is in tsv form:
-
-|record_no |video_id |vid|start_time|end_time|start_frame|end_frame|caption|
-|  ----  | ----  | ----| ----|----|----|----|----|
-| 0 |S50_Brownie_7150991-203| f141_i023_a00|151.0|152.0|4530|4590|taking a kitchen knife from a drawer .|
-| 1 |S47_Salad_7150991-196| f130_i028_a00|214.0|246.0|6420|7410| peeling a zucchini with a peeler .|
-| 2 |S22_Salad_7150991-952| f60_i000_a00|6.0|9.0|180|300|taking a bowl from a cabinet . |
-
-We will only train on one category for simplicity and time concern. We chose subcategory Pizza.
+#### Usage (Dataset Preprocessing)
+1. After downloading the dataset, create a folder `data` which is in the same hierarchy with our code and put the unzipped version of `YouTubeClips.tar` and `Microsoft Research Video Description Corpus` inside the data folder.
+2. run `python convert_video_to_image.py`
+This helps convert our video to sequence of images
+3. run `python preprocess.py` to preprocessing
+This helps us build our training/testing/validation dataset
 
 ### Methodology
+We choose to treat this task as a sequence-to-sequence generation task. We ...
+
+
 Firstly, we plan to train a video encoder, which can consist of a CNN-based image encoder and a Transformer-based encoder to encode the temporal information of the video. Then we can utilize the video encoding as the input of a language model, which can be a LSTM or a Transformer-decoder, to generate the captions. We might consider using the word embeddings from [GloVe dataset](https://nlp.stanford.edu/projects/glove/).
  
 We will train our model on the training set using cross entropy loss combined with some custom loss. We will then validate the model on validation set to further tune the model.
@@ -48,20 +43,25 @@ We will train our model on the training set using cross entropy loss combined wi
 ### Metrics
 We plan to test our story-telling model on the test dataset of uncaptioned videos to generate their captions. We evaluate the performance of our model on the similarity of the generated sentences and standard answers. Specifically, We think the n-gram BLEU score is an appropriate metric to evaluate the accuracy of our captions. The baseline model (Vision Transformer) can achieve 68.4 1-gram BLEU score and 50.7 5-gram BLEU score. We hope to improve the performance in some specific subjects, to achieve higher BLEU scores than the baseline model.
 
-### Ethics
-##### What broader societal issues are relevant to your chosen problem space?
-In this project, we aim at generating high-quality, articulated text descriptions given videos as input.  To this end, we can improve the accessibility of various videos in the wild, which hopefully can benefit  users. By the generated descriptions/tags, we can also sort and categorize massive video sets.
-##### Why is Deep Learning a good approach to this problem?
-Deep learning is currently the most popular and accurate method for computer vision/natural language processing. As for video understanding, by using neural networks with convolutional/attention, the model can learn effective representation. In addition, deep learning methods can achieve end-to-end modeling and are more flexible than traditional methods that usually use handcrafted features (lacking generalizability to  other datasets). 
+### Contributor
+Chen Wei (cwei24), Yuan Zang (yzang6), Yunhao Luo (yluo73)
 
-
-### Division of labor  (we will finalize this after talking to TA)
+### Division of labor 
 We plan on working equally across X aspects of the project:
-1. Preprocess the data: Yuan Zang
-2. Model Architecture (we will finalize this after talking to TA) - 2 encoders below form a video encoder: 
+1. Preprocess the data: Chen Wei, Yuan Zang
+2. Model Architecture - 2 encoders below form a video encoder: 
   - a 3d-CNN-based image encoder (to get C3D features): Chen Wei
   - a Transformer-based encoder: Yunhao Luo
   - LSTM or Transformer-decoder: Yuan Zang
 3. Fine-tuning, Evaluation and Visualization: Together
 4. Ablation study (maybe)
 5. Write the report and make the poster: Together
+
+### Ethics
+##### What broader societal issues are relevant to your chosen problem space?
+In this project, we aim at generating high-quality, articulated text descriptions given videos as input.  To this end, we can improve the accessibility of various videos in the wild, which hopefully can benefit  users. By the generated descriptions/tags, we can also sort and categorize massive video sets.
+##### Why is Deep Learning a good approach to this problem?
+Deep learning is currently the most popular and accurate method for computer vision/natural language processing. As for video understanding, by using neural networks with convolutional/attention, the model can learn effective representation. In addition, deep learning methods can achieve end-to-end modeling and are more flexible than traditional methods that usually use handcrafted features (lacking generalizability to  other datasets). 
+
+### Related Work
+- [ClipCap: CLIP Prefix for Image Captioning](https://arxiv.org/pdf/2111.09734.pdf)
