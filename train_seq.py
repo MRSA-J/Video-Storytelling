@@ -46,9 +46,10 @@ class ClipCocoDataset(Dataset):
         captions_raw = all_data["captions"]
         # self.image_ids = [caption["image_id"] for caption in captions_raw]
         self.captions = [caption['caption'] for caption in captions_raw]
+        self.videos = all_data['video_names']
 
         # For debugging
-        print(self.captions[:10])
+        #print(self.captions[:10])
 
         if os.path.isfile(f"{data_path[:-4]}_tokens.pkl"):
             with open(f"{data_path[:-4]}_tokens.pkl", 'rb') as f:
@@ -59,7 +60,7 @@ class ClipCocoDataset(Dataset):
             max_seq_len = 0
             for caption in captions_raw:
                 # tokenize the captions
-                self.captions_tokens.append(torch.tensor(self.tokenizer.encode(caption['caption']), dtype=torch.int64))
+                self.captions_tokens.append(torch.tensor(self.tokenizer.encode(caption['caption'][0]), dtype=torch.int64))
                 # turn captions into embeddings
                 self.caption2embedding.append(caption["clip_embedding"])
                 max_seq_len = max(max_seq_len, self.captions_tokens[-1].shape[0])
@@ -95,10 +96,11 @@ class ClipCocoDataset(Dataset):
         prefix = self.prefixes[self.caption2embedding[item]]
         pad_mask = self.pad_masks[self.caption2embedding[item]]
         caption =self.captions[item]
+        video = self.videos[item]
         # if self.normalize_prefix:
         #     prefix = prefix.float()
         #     prefix = prefix / prefix.norm(2, -1)
-        return tokens, mask, prefix, pad_mask, caption
+        return tokens, mask, prefix, pad_mask, caption,video
 
 # Turn token into embeddings
 class TokenEmbedding(nn.Module):
@@ -276,7 +278,7 @@ def save_config(args: argparse.Namespace):
 
 
 
-def train(dataset, model: ClipCaptionModel, args,
+def train(train_set,val_set, model: ClipCaptionModel, args,
           lr: float = 2e-5, warmup_steps: int = 5000, output_dir: str = ".", output_prefix: str = "",prefix_length=10):
 
     device = torch.device('cuda:0')
@@ -286,9 +288,10 @@ def train(dataset, model: ClipCaptionModel, args,
         os.makedirs(output_dir)
     model = model.to(device)
     model.train()
-    optimizer = AdamW(model.parameters(), lr=8e-5)
+    optimizer = AdamW(model.parameters(), lr=6e-5, weight_decay=1e-4)
 
-    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    train_dataloader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+    val_dataloader = DataLoader(val_set, batch_size=batch_size, shuffle=False)
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=warmup_steps, num_training_steps=epochs * len(train_dataloader)
     )
@@ -297,7 +300,8 @@ def train(dataset, model: ClipCaptionModel, args,
         print(f">>> Training epoch {epoch}")
         sys.stdout.flush()
         progress = tqdm(total=len(train_dataloader), desc=output_prefix)
-        for idx, (tokens, mask, prefix,pad_mask,_) in enumerate(train_dataloader):
+        for idx, (tokens, mask, prefix,pad_mask,_,_) in enumerate(train_dataloader):
+            model.train()
             model.zero_grad()
             tokens, mask, prefix, pad_mask = tokens.to(device), mask.to(device), prefix.to(device, dtype=torch.float32), pad_mask.to(device)
             outputs = model(tokens=tokens, prefix=prefix, mask=mask, pad_mask=pad_mask)
@@ -318,6 +322,22 @@ def train(dataset, model: ClipCaptionModel, args,
                     os.path.join(output_dir, f"{output_prefix}_latest.pt"),
                 )
         progress.close()
+        progress2 = tqdm(total=len(val_dataloader), desc=output_prefix)
+        for idx, (tokens, mask, prefix,pad_mask,_,_) in enumerate(val_dataloader):
+            model.eval()
+            tokens, mask, prefix, pad_mask = tokens.to(device), mask.to(device), prefix.to(device, dtype=torch.float32), pad_mask.to(device)
+            outputs = model(tokens=tokens, prefix=prefix, mask=mask, pad_mask=pad_mask)
+            logits = outputs.logits[:, prefix_length - 1: -1]
+            loss = F.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
+            progress2.set_postfix({"val_loss": loss.item()})
+            progress2.update()
+
+            if (idx + 1) % 10000 == 0:
+                torch.save(
+                    model.state_dict(),
+                    os.path.join(output_dir, f"{output_prefix}_latest.pt"),
+                )
+        progress2.close()
         if epoch % args.save_every == 0 or epoch == epochs - 1:
             torch.save(
                 model.state_dict(),
@@ -448,7 +468,10 @@ def test(model,test_set,prefix_length,tokenizer):
     model = model.eval()
     model = model.to(device)
     use_beam_search = False
-    for tokens, mask, prefix, pad_mask, caption in test_set:
+    fw=open('outputs.txt','w')
+    all_data=[]
+    id=0
+    for tokens, mask, prefix, pad_mask, caption,video in test_set:
         tokens, mask, prefix, pad_mask = tokens.to(device), mask.to(device), prefix.to(device,dtype=torch.float32), pad_mask.to(device)
         prefix = prefix.unsqueeze(0)
         prefix = torch.transpose(prefix, 0, 1)
@@ -461,8 +484,12 @@ def test(model,test_set,prefix_length,tokenizer):
         '''
         TODO: eval(generated_text_prefix,caption)
         '''
-        print(caption)
+        print(caption[0])
         print(generated_text_prefix)
+        all_data.append({'video_name':video,'video_id':id,'pred_sentence':generated_text_prefix,'ref_sentences':caption})
+    with open('save_test_data_seq.pkl','wb') as fwb:
+        pickle.dump(all_data,fwb)
+
 
 
 
@@ -493,12 +520,16 @@ def main():
     model = ClipCaptionPrefix(prefix_length=prefix_length, prefix_size=prefix_dim,
                               num_layers=args.num_layers)
     print("Train only prefix")
+    torch.random.manual_seed(333)
     train_size = int(len(dataset) * 0.9)
-    train_set, test_set = torch.utils.data.random_split(dataset, [train_size, len(dataset) - train_size])
-    train(train_set, model, args, output_dir=args.out_dir, output_prefix=args.prefix)
+
+    all_train, test_set = torch.utils.data.random_split(dataset, [train_size, len(dataset) - train_size])
+    train_size = int(len(all_train) * 0.9)
+    train_set, val_set = torch.utils.data.random_split(all_train, [train_size, len(all_train) - train_size])
+    #train(train_set,val_set, model, args, output_dir=args.out_dir, output_prefix=args.prefix,prefix_length=prefix_length)
     model = ClipCaptionModel(prefix_length=prefix_length, prefix_size=prefix_dim,
                               num_layers=args.num_layers)
-    model_path = 'msv_train/msv_prefix-099.pt'
+    model_path = 'msv_train/msv_prefix-049.pt'
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     test(model,test_set,prefix_length,tokenizer)

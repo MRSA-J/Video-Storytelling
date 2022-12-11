@@ -54,7 +54,7 @@ def video_to_single_caption(video_name, all_captions, preprocesser):
 
     with torch.no_grad():
         image_encoding = clip_model.encode_image(image).cpu()
-    captions = all_captions[video_name][0]
+    captions = all_captions[video_name]
     return image_encoding, captions
 
 # The method to build a caption dictionary
@@ -81,6 +81,35 @@ def build_dataset():
     video_single_images = []
     mean_images = []
     i=0
+    all_video_names = []
+    for video_name in tqdm(all_cap_dict):
+        #images, captions,_= align_video_with_caption(video_name,all_cap_dict,preprocesser)
+        #all_images.append(images)
+        #all_captions.append(captions)
+        # Create (video -> single image, caption list) dataset
+
+        single_image, captions = video_to_single_caption(video_name, all_cap_dict, preprocesser)
+        video_single_images.append(single_image)
+        d={}
+        d["clip_embedding"] = i
+        i += 1
+        d["caption"] = captions
+        all_captions.append(d)
+        print(d)
+        #mean_image = torch.mean(images,dim=0)
+        #mean_images.append(mean_image.unsqueeze(0))
+        all_video_names.append(video_name)
+    with open('save_dataset_sibgle.pkl', 'wb') as f:
+        pickle.dump({"clip_embedding": torch.cat(video_single_images, dim=0), "captions": all_captions,"video_names":all_video_names}, f)
+def build_mean_dataset():
+    all_images = []
+    all_captions = []
+    all_cap_dict = build_caption_dict()
+    # One image per video
+    video_single_images = []
+    mean_images = []
+    i=0
+    all_video_names = []
     for video_name in tqdm(all_cap_dict):
         images, captions,_= align_video_with_caption(video_name,all_cap_dict,preprocesser)
         #all_images.append(images)
@@ -92,19 +121,21 @@ def build_dataset():
         d={}
         d["clip_embedding"] = i
         i += 1
-        d["caption"] = captions[0]
+        d["caption"] = captions
         all_captions.append(d)
         print(d)
         mean_image = torch.mean(images,dim=0)
         mean_images.append(mean_image.unsqueeze(0))
+        all_video_names.append(video_name)
     with open('save_dataset_mean.pkl', 'wb') as f:
-        pickle.dump({"clip_embedding": torch.cat(mean_images, dim=0), "captions": all_captions}, f)
+        pickle.dump({"clip_embedding": torch.cat(mean_images, dim=0), "captions": all_captions,"video_names":all_video_names}, f)
 def build_seq_dataset():
     all_images = []
     all_captions = []
     all_cap_dict = build_caption_dict()
     i = 0
     all_masks = []
+    all_video_names = []
     for video_name in tqdm(all_cap_dict):
         images, captions, masks= align_video_with_caption(video_name,all_cap_dict,preprocesser,padding=20,pad=True)
         all_images.append(images)
@@ -112,13 +143,15 @@ def build_seq_dataset():
         d = {}
         d["clip_embedding"] = i
         i += 1
-        d["caption"] = captions[0]
+        d["caption"] = captions
         all_captions.append(d)
+        all_video_names.append(video_name)
     all_images=torch.cat(all_images, dim=0)
     all_masks = torch.cat(all_masks, dim=0)
     print(all_images.shape)
     print(all_masks.shape)
     with open('save_dataset_seq.pkl', 'wb') as f:
-        pickle.dump({"clip_embedding": all_images, "captions": all_captions, "masks": all_masks}, f)
+        pickle.dump({"clip_embedding": all_images, "captions": all_captions, "masks": all_masks,"video_names":all_video_names}, f)
 if __name__ == "__main__":
-    build_seq_dataset()
+    #build_seq_dataset()
+    build_dataset()
