@@ -272,10 +272,6 @@ def save_config(args: argparse.Namespace):
     with open(out_path, 'w') as outfile:
         json.dump(config, outfile)
 
-
-
-
-
 def train(dataset, model: ClipCaptionModel, args,
           lr: float = 2e-5, warmup_steps: int = 5000, output_dir: str = ".", output_prefix: str = "",prefix_length=10):
 
@@ -324,6 +320,7 @@ def train(dataset, model: ClipCaptionModel, args,
                 os.path.join(output_dir, f"{output_prefix}-{epoch:03d}.pt"),
             )
     return model
+
 def test(model,test_set,prefix_length,tokenizer):
     def generate_beam(model, tokenizer, beam_size: int = 5, prompt=None, embed=None,
                       entry_length=67, temperature=1., stop_token: str = '.'):
@@ -377,6 +374,7 @@ def test(model,test_set,prefix_length,tokenizer):
                 is_stopped = is_stopped + next_tokens.eq(stop_token_index).squeeze()
                 if is_stopped.all():
                     break
+
         scores = scores / seq_lengths
         output_list = tokens.cpu().numpy()
         output_texts = [tokenizer.decode(output[:int(length)]) for output, length in zip(output_list, seq_lengths)]
@@ -444,6 +442,7 @@ def test(model,test_set,prefix_length,tokenizer):
                 generated_list.append(output_text)
 
         return generated_list[0]
+
     device='cuda:0'
     model = model.eval()
     model = model.to(device)
@@ -463,10 +462,6 @@ def test(model,test_set,prefix_length,tokenizer):
         '''
         print(caption)
         print(generated_text_prefix)
-
-
-
-
 
 
 def main():
@@ -502,8 +497,6 @@ def main():
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     test(model,test_set,prefix_length,tokenizer)
-
-
 
 
 

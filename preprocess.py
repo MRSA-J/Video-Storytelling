@@ -99,6 +99,7 @@ def build_dataset():
         mean_images.append(mean_image.unsqueeze(0))
     with open('save_dataset_mean.pkl', 'wb') as f:
         pickle.dump({"clip_embedding": torch.cat(mean_images, dim=0), "captions": all_captions}, f)
+
 def build_seq_dataset():
     all_images = []
     all_captions = []
@@ -120,5 +121,6 @@ def build_seq_dataset():
     print(all_masks.shape)
     with open('save_dataset_seq.pkl', 'wb') as f:
         pickle.dump({"clip_embedding": all_images, "captions": all_captions, "masks": all_masks}, f)
+
 if __name__ == "__main__":
     build_seq_dataset()
