@@ -29,7 +29,7 @@ The Description txt is in the following form: <br>
 With the `-4wsuPCjDBc_5_15` being the video id and `a squirrel is eating a peanut in its shell` being the description. Since the captions all have similar meanings, this task is more like a video caption task instead of a storytelling one.
 
 
-#### Usage (Dataset Preprocessing)
+#### Usage 
 1. After downloading the dataset, create a folder `data` which is in the same hierarchy with our code and put the unzipped version of `YouTubeClips.tar` and `Microsoft Research Video Description Corpus` inside the data folder.
 2. run `python convert_video_to_image.py`
 This helps convert our video to sequence of images
@@ -43,20 +43,23 @@ This helps us build our training/testing/validation dataset
 ### Methodology
 We choose to treat this task as a sequence-to-sequence generation task.<br> 
 
-Firstly we use the `cv2` package to help us turn video into a sequence of image frames. We set the frameRate to be 1, that means 1s per image frame. We choose this setting as our videos in our dataset are mainly 5s or 10s. We think 1s per image frame is enough for our training. And since our dataset is already very big, we want to make our lives easier by limiting the # of images that the video can be turned into. Feel free to make a larger image frame set corresponding to the video if you have more time. <br>
+To start, we used the `cv2` package to help us turn video into a sequence of image frames. We set the frame rate to be 1s per image frame, as the videos in our dataset are generally 5 or 10 seconds in length. After several tests, the frame rate that 1s per image frame is adequate for this translation task, and also economical since it has the lower number of images generated to be fed into our model. Considering the large size of YoutuberClips dataset, we limited the number of images that can be extracted from each video. In this process, we keep a good balance of the trade off between the number of images we extracted and the quality of the model performance.Feel free to make a larger image frame set corresponding to the video if you have more time. <br>
 
 ![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/video-image.png)
 
-Then, we use 3 different ways to process our image frames, so that it can be put into the video. Below are the 3 ways of input (and we will justify our choice in our report). We make such decision mainly based on the feature of our dataset:
+In the next step, we used 3 different strategies to process our image frames, so that it can be put into the model. Below are the 3 ways of input (and we will justify our choice in our report):
 
 1. Turn our video into `random single image` frames.
 2. Turn our video into `mean image` frames. That means the mean of every image frame corresponding to that video.
 3. Turn our video into `sequential image` frames. And we will use positional encoding afterwards in our transformer part to deal with it.
 
-Afterwards, we use the same method described in [ClipCap: CLIP Prefix for Image Captioning](https://arxiv.org/pdf/2111.09734.pdf), remove the pretrained on COCO dataset's weight and apply our own creativity (positional encoding) on the model. We make this choice, as we believe using prefix training to capture the video/image feature is a very lighted way of training and can achieve good results without the need of managing to "train too much".
+Afterwards, we use the same method described in [ClipCap: CLIP Prefix for Image Captioning](https://arxiv.org/pdf/2111.09734.pdf). Their model structure is like the below. We removed the pretrained COCO dataset’s weight and applied our own creativity (positional encoding) on the model.We make this choice, as we believe using prefix training to capture the video/image feature is a very lighted way of training and can achieve good results without the need of managing to "train too much". And instead of passing the image, we pass the preprocess video (image frames) into the CLIP model.
 
-Todo: add model structure and explanation
 ![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/ClipCap%20Model.png)
+
+The intuition is to transform image clips into embeddings, trying to capture the information of image clips by adding a prefix to caption and perform multi-head attention on the [prefix+fixed word embedding] so that we could train a prefix based on transformer results to capture the media information. This prefix training is the prefix embeddings, we use the GPT2 model to generate sentences from [prefix +fixed tokenize captions embeddings]. Then, after removing the prefix, we get the sentence we want. 
+
+Our modified model structure looks like:...
 
 ### Metrics
 We plan to test our video caption model on the test dataset of uncaptioned videos to generate their captions. We evaluate the performance of our model on the similarity of the generated sentences and standard answers. Specifically, We think the n-gram BLEU score is an appropriate metric to evaluate the accuracy of our captions. The baseline model (Vision Transformer) can achieve 68.4 1-gram BLEU score and 50.7 5-gram BLEU score. We hope to improve the performance in some specific subjects, to achieve higher BLEU scores than the baseline model.
@@ -71,7 +74,7 @@ We plan to test our video caption model on the test dataset of uncaptioned video
 | Mean                            |  a woman is talking to a man.  | a wild animal is walking on a grassy area.   | a woman is stirring a large pot of water.  | a woman is applying a pencil to a nail.    | 
 | Sequential                   |                |               |                  |                   | 
 
-As above, single, mean, sequential means different preprocessing methods and how image frames are selected and passed to the model.
+As above, single, mean, sequential means different preprocessing methods and how image frames are selected and passed to the model. We will analyze this result in our report.
 
 ### Contributor
 Chen Wei (cwei24), Yuan Zang (yzang6), Yunhao Luo (yluo73)
@@ -84,10 +87,10 @@ We plan on working equally across X aspects of the project:
   - Video/image clips encoder: Yuan Zang
   - Multi-head attention Transformer: Yuan Zang, Chen Wei
   - Transformer with Positional Encoding to encode position information: Yuan Zang
-  - Evaluation (BLEU, METEOR, CIDEr, SPICE): Yunhao Luo
-3. Fine-tuning and Visualization: Yuan Zang
-4. Ablation study: Chen Wei
-5. Write the report and make the poster: Chen Wei
+4. Evaluation (BLEU, METEOR, CIDEr, SPICE): Yunhao Luo
+5. Fine-tuning and Visualization: Yuan Zang
+6. Ablation study: Chen Wei
+7. Write the report and make the poster: Chen Wei
 
 ### Ethics
 ##### What broader societal issues are relevant to your chosen problem space?
@@ -97,3 +100,7 @@ Deep learning is currently the most popular and accurate method for computer vis
 
 ### Related Work
 - [ClipCap: CLIP Prefix for Image Captioning](https://arxiv.org/pdf/2111.09734.pdf)
+
+### Reflections
+Our project ultimately turned out to be ok and our model works as expected. It can generate captions that are acceptable and coherent although not being perfect. <br>
+If we have more time, we could implement grid search on the number of image frames we will use to represent a video and the frame_rate parameters when extracting image frames from videos to make the result better. Also, we could try different model structures and do more ablation studies. For example, using C3D to extract video structure might perform better than our current model, as it preserves positional information better.
