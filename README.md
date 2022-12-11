@@ -69,9 +69,11 @@ We plan to test our video caption model on the test dataset of uncaptioned video
 ### Our Generation Examples
 | Video                         | 1                 |2             | 3               | 4               |
 | ----------------------   | ----------- |----------- |----------- |----------- |
-| Video ID          |  `0bSz70pYAP0_5_15`  | `9HDUADeA2xg_3_31` | `60x_yxy7Sfw_1_7`| `-vg3vR86fu0_1_6` |
-| Example Image Frame |![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/HkpUWzNNVt4_20_30.jpg)|![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/RMznbCn5sQs_0_10.jpg) | ![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/aM-RcQj0a7I_37_55.jpg)|![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/R8FDJgVW3Vc_0_4.jpg)|   
-| Ground Truth Sentence|  |             |   |                |   
+| Video ID          |  `0bSz70pYAP0_5_15`  | `-vg3vR86fu0_1_6` | `60x_yxy7Sfw_1_7`| `9HDUADeA2xg_3_31` |
+| Sample Image Frame |![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/sample%20video%20image/0bSz70pYAP0_5_15/0bSz70pYAP0_5_15image10.jpg)|![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/sample%20video%20image/-vg3vR86fu0_1_6/-vg3vR86fu0_1_6image4.jpg) | ![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/sample%20video%20image/60x_yxy7Sfw_1_7/60x_yxy7Sfw_1_7image5.jpg)|![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/sample%20video%20image/9HDUADeA2xg_3_31/9HDUADeA2xg_3_31image13.jpg)|  
+| All Image Frame | | | | |
+| Sample Ground Truth Sentence|an airplane is flying in a wide circular pattern.|a guy on a bicycle who tries to jump his bike on a wooden ramp.|a man seated is watching and admiring the image of a woman on the screen of his laptop.| a puppy is playing with a ball.|   
+| All Ground Truth Sentences|  |             |   |                |   
 | Single                           | a flying airplane flying over a lake.| a man is riding a motorcycle. | a woman is dancing.| a baby is walking on a rug. |   
 | Mean                            |  a plane is flying.  | a man is driving a car.   | a man is talking on a computer. | a cat is playing with a toy.    | 
 | Sequential                   |  a plane is flying. |a man is riding a motorcycle.|a man is talking to a woman.| a cat is playing with a toy.| 
