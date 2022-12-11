@@ -52,6 +52,7 @@ Then, we use 3 different ways to process our image frames, so that it can be put
 Afterwards, we use the same method described in [ClipCap: CLIP Prefix for Image Captioning](https://arxiv.org/pdf/2111.09734.pdf), remove the pretrained on COCO dataset's weight and apply our own creativity (positional encoding) on the model. We make this choice, as we believe using prefix training to capture the video/image feature is a very lighted way of training and can achieve good results without the need of managing to "train too much".
 
 Todo: add model structure and explanation
+![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/ClipCap%20Model.png)
 
 ### Metrics
 We plan to test our video caption model on the test dataset of uncaptioned videos to generate their captions. We evaluate the performance of our model on the similarity of the generated sentences and standard answers. Specifically, We think the n-gram BLEU score is an appropriate metric to evaluate the accuracy of our captions. The baseline model (Vision Transformer) can achieve 68.4 1-gram BLEU score and 50.7 5-gram BLEU score. We hope to improve the performance in some specific subjects, to achieve higher BLEU scores than the baseline model.
@@ -60,7 +61,7 @@ We plan to test our video caption model on the test dataset of uncaptioned video
 | Video                         | 1                 |2             | 3               | 4               |
 | ----------------------   | ----------- |----------- |----------- |----------- |
 | Video ID          |  `HkpUWzNNVt4_20_30`  | `RMznbCn5sQs_0_10` | `aM-RcQj0a7I_37_55`| `R8FDJgVW3Vc_0_4` |
-| Example Image Frame |                 |               |                  |                  |   
+| Example Image Frame |![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/HkpUWzNNVt4_20_30.jpg)|![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/RMznbCn5sQs_0_10.jpg) | ![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/aM-RcQj0a7I_37_55.jpg)|![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/R8FDJgVW3Vc_0_4.jpg)|   
 | Ground Truth Sentence| two couples are interacting.  | zebra are running in an enclosed area.              | chicken is being stirred in boiled.      | a woman is tapping her nails.                 |   
 | Single                           | two men are talking on a cell phone. | a tiger is walking. | a man is stirring a pot of water. | someone is peeling a pencil. |   
 | Mean                            |  a woman is talking to a man.  | a wild animal is walking on a grassy area.   | a woman is stirring a large pot of water.  | a woman is applying a pencil to a nail.    | 
