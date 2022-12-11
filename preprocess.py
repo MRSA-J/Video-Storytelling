@@ -124,8 +124,11 @@ def build_mean_dataset():
         d["caption"] = captions
         all_captions.append(d)
         print(d)
-        mean_image = torch.mean(images,dim=0)
-        mean_images.append(mean_image.unsqueeze(0))
+        images = images.squeeze(0)
+        print(images.shape)
+        mean_image = torch.mean(images,dim=0).unsqueeze(0)
+        print(mean_image.shape)
+        mean_images.append(mean_image)
         all_video_names.append(video_name)
     with open('save_dataset_mean.pkl', 'wb') as f:
         pickle.dump({"clip_embedding": torch.cat(mean_images, dim=0), "captions": all_captions,"video_names":all_video_names}, f)
@@ -154,4 +157,4 @@ def build_seq_dataset():
         pickle.dump({"clip_embedding": all_images, "captions": all_captions, "masks": all_masks,"video_names":all_video_names}, f)
 if __name__ == "__main__":
     #build_seq_dataset()
-    build_dataset()
+    build_mean_dataset()
