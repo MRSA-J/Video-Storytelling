@@ -19,7 +19,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math, copy, time
 from torch.autograd import Variable
-
+from torch.nn import functional as nnf
 T = torch.Tensor
 TN = Optional[T]
 D = torch.device
@@ -94,10 +94,11 @@ class ClipCocoDataset(Dataset):
         tokens, mask = self.pad_tokens(item)
         prefix = self.prefixes[self.caption2embedding[item]]
         pad_mask = self.pad_masks[self.caption2embedding[item]]
+        caption =self.captions[item]
         # if self.normalize_prefix:
         #     prefix = prefix.float()
         #     prefix = prefix / prefix.norm(2, -1)
-        return tokens, mask, prefix, pad_mask
+        return tokens, mask, prefix, pad_mask, caption
 
 # Turn token into embeddings
 class TokenEmbedding(nn.Module):
@@ -225,7 +226,7 @@ class TransformerMapper(nn.Module):
 
 
 class ClipCaptionModel(nn.Module):
-    def __init__(self, prefix_length: int, mapping_type: int, clip_length: int, num_layers: int,
+    def __init__(self, prefix_length: int, num_layers: int,
                  prefix_size: int = 512, ):
         super(ClipCaptionModel, self).__init__()
         self.prefix_length = prefix_length
@@ -272,29 +273,11 @@ def save_config(args: argparse.Namespace):
         json.dump(config, outfile)
 
 
-def load_model(config_path: str, epoch_or_latest: Union[str, int] = '_latest'):
-    with open(config_path) as f:
-        config = json.load(f)
-    parser = argparse.ArgumentParser()
-    parser.set_defaults(**config)
-    args = parser.parse_args()
-    if type(epoch_or_latest) is int:
-        epoch_or_latest = f"-{epoch_or_latest:03d}"
-    model_path = os.path.join(args.out_dir, f"{args.prefix}{epoch_or_latest}.pt")
-    if args.only_prefix:
-        model = ClipCaptionPrefix(args.prefix_length)
-    else:
-        model = ClipCaptionModel(args.prefix_length)
-    if os.path.isfile(model_path):
-        print(f"loading model from {model_path}")
-        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-    else:
-        print(f"{model_path} is not exist")
-    return model, parser
 
 
-def train(dataset: ClipCocoDataset, model: ClipCaptionModel, args,
-          lr: float = 2e-5, warmup_steps: int = 5000, output_dir: str = ".", output_prefix: str = ""):
+
+def train(dataset, model: ClipCaptionModel, args,
+          lr: float = 2e-5, warmup_steps: int = 5000, output_dir: str = ".", output_prefix: str = "",prefix_length=10):
 
     device = torch.device('cuda:0')
     batch_size = args.bs
@@ -303,21 +286,22 @@ def train(dataset: ClipCocoDataset, model: ClipCaptionModel, args,
         os.makedirs(output_dir)
     model = model.to(device)
     model.train()
-    optimizer = AdamW(model.parameters(), lr=lr)
-    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    optimizer = AdamW(model.parameters(), lr=8e-5)
+
+    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=warmup_steps, num_training_steps=epochs * len(train_dataloader)
     )
-    # save_config(args)
+
     for epoch in range(epochs):
         print(f">>> Training epoch {epoch}")
         sys.stdout.flush()
         progress = tqdm(total=len(train_dataloader), desc=output_prefix)
-        for idx, (tokens, mask, prefix,pad_mask) in enumerate(train_dataloader):
+        for idx, (tokens, mask, prefix,pad_mask,_) in enumerate(train_dataloader):
             model.zero_grad()
             tokens, mask, prefix, pad_mask = tokens.to(device), mask.to(device), prefix.to(device, dtype=torch.float32), pad_mask.to(device)
             outputs = model(tokens=tokens, prefix=prefix, mask=mask, pad_mask=pad_mask)
-            logits = outputs.logits[:, dataset.prefix_length - 1: -1]
+            logits = outputs.logits[:, prefix_length - 1: -1]
             loss = F.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
             loss.backward()
 
@@ -340,6 +324,149 @@ def train(dataset: ClipCocoDataset, model: ClipCaptionModel, args,
                 os.path.join(output_dir, f"{output_prefix}-{epoch:03d}.pt"),
             )
     return model
+def test(model,test_set,prefix_length,tokenizer):
+    def generate_beam(model, tokenizer, beam_size: int = 5, prompt=None, embed=None,
+                      entry_length=67, temperature=1., stop_token: str = '.'):
+        model.eval()
+        stop_token_index = tokenizer.encode(stop_token)[0]
+        tokens = None
+        scores = None
+        device = next(model.parameters()).device
+        seq_lengths = torch.ones(beam_size, device=device)
+        is_stopped = torch.zeros(beam_size, device=device, dtype=torch.bool)
+        with torch.no_grad():
+            if embed is not None:
+                generated = embed
+            else:
+                if tokens is None:
+                    tokens = torch.tensor(tokenizer.encode(prompt))
+                    tokens = tokens.unsqueeze(0).to(device)
+                    generated = model.gpt.transformer.wte(tokens)
+            for i in range(entry_length):
+                outputs = model.gpt(inputs_embeds=generated)
+                logits = outputs.logits
+                logits = logits[:, -1, :] / (temperature if temperature > 0 else 1.0)
+                logits = logits.softmax(-1).log()
+                if scores is None:
+                    scores, next_tokens = logits.topk(beam_size, -1)
+                    generated = generated.expand(beam_size, *generated.shape[1:])
+                    next_tokens, scores = next_tokens.permute(1, 0), scores.squeeze(0)
+                    if tokens is None:
+                        tokens = next_tokens
+                    else:
+                        tokens = tokens.expand(beam_size, *tokens.shape[1:])
+                        tokens = torch.cat((tokens, next_tokens), dim=1)
+                else:
+                    logits[is_stopped] = -float(np.inf)
+                    logits[is_stopped, 0] = 0
+                    scores_sum = scores[:, None] + logits
+                    seq_lengths[~is_stopped] += 1
+                    scores_sum_average = scores_sum / seq_lengths[:, None]
+                    scores_sum_average, next_tokens = scores_sum_average.view(-1).topk(beam_size, -1)
+                    next_tokens_source = next_tokens // scores_sum.shape[1]
+                    seq_lengths = seq_lengths[next_tokens_source]
+                    next_tokens = next_tokens % scores_sum.shape[1]
+                    next_tokens = next_tokens.unsqueeze(1)
+                    tokens = tokens[next_tokens_source]
+                    tokens = torch.cat((tokens, next_tokens), dim=1)
+                    generated = generated[next_tokens_source]
+                    scores = scores_sum_average * seq_lengths
+                    is_stopped = is_stopped[next_tokens_source]
+                next_token_embed = model.gpt.transformer.wte(next_tokens.squeeze()).view(generated.shape[0], 1, -1)
+                generated = torch.cat((generated, next_token_embed), dim=1)
+                is_stopped = is_stopped + next_tokens.eq(stop_token_index).squeeze()
+                if is_stopped.all():
+                    break
+        scores = scores / seq_lengths
+        output_list = tokens.cpu().numpy()
+        output_texts = [tokenizer.decode(output[:int(length)]) for output, length in zip(output_list, seq_lengths)]
+        order = scores.argsort(descending=True)
+        output_texts = [output_texts[i] for i in order]
+        return output_texts
+
+    def generate2(
+            model,
+            tokenizer,
+            tokens=None,
+            prompt=None,
+            embed=None,
+            entry_count=1,
+            entry_length=67,  # maximum number of words
+            top_p=0.8,
+            temperature=1.,
+            stop_token: str = '.',
+    ):
+        model.eval()
+        generated_num = 0
+        generated_list = []
+        stop_token_index = tokenizer.encode(stop_token)[0]
+        filter_value = -float("Inf")
+        device = next(model.parameters()).device
+
+        with torch.no_grad():
+            for entry_idx in range(entry_count):
+                if embed is not None:
+                    generated = embed
+                else:
+                    if tokens is None:
+                        tokens = torch.tensor(tokenizer.encode(prompt))
+                        tokens = tokens.unsqueeze(0).to(device)
+
+                    generated = model.gpt.transformer.wte(tokens)
+
+                for i in range(entry_length):
+
+                    outputs = model.gpt(inputs_embeds=generated)
+                    logits = outputs.logits
+                    logits = logits[:, -1, :] / (temperature if temperature > 0 else 1.0)
+                    sorted_logits, sorted_indices = torch.sort(logits, descending=True)
+                    cumulative_probs = torch.cumsum(nnf.softmax(sorted_logits, dim=-1), dim=-1)
+                    sorted_indices_to_remove = cumulative_probs > top_p
+                    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[
+                                                        ..., :-1
+                                                        ].clone()
+                    sorted_indices_to_remove[..., 0] = 0
+
+                    indices_to_remove = sorted_indices[sorted_indices_to_remove]
+                    logits[:, indices_to_remove] = filter_value
+                    next_token = torch.argmax(logits, -1).unsqueeze(0)
+                    next_token_embed = model.gpt.transformer.wte(next_token)
+                    if tokens is None:
+                        tokens = next_token
+                    else:
+                        tokens = torch.cat((tokens, next_token), dim=1)
+                    generated = torch.cat((generated, next_token_embed), dim=1)
+                    if stop_token_index == next_token.item():
+                        break
+
+                output_list = list(tokens.squeeze().cpu().numpy())
+                output_text = tokenizer.decode(output_list)
+                generated_list.append(output_text)
+
+        return generated_list[0]
+    device='cuda:0'
+    model = model.eval()
+    model = model.to(device)
+    use_beam_search = False
+    for tokens, mask, prefix, pad_mask, caption in test_set:
+        tokens, mask, prefix, pad_mask = tokens.to(device), mask.to(device), prefix.to(device,dtype=torch.float32), pad_mask.to(device)
+        prefix = prefix.unsqueeze(0)
+        prefix = torch.transpose(prefix, 0, 1)
+        pad_mask = pad_mask.unsqueeze(0)
+        prefix_embed = model.clip_project(prefix, pad_mask).reshape(1, prefix_length, -1)
+        if use_beam_search:
+            generated_text_prefix = generate_beam(model, tokenizer, embed=prefix_embed)[0]
+        else:
+            generated_text_prefix = generate2(model, tokenizer, embed=prefix_embed)
+        '''
+        TODO: eval(generated_text_prefix,caption)
+        '''
+        print(caption)
+        print(generated_text_prefix)
+
+
+
+
 
 
 def main():
@@ -364,11 +491,21 @@ def main():
     args.mapping_type = {'mlp': MappingType.MLP, 'transformer': MappingType.Transformer}[args.mapping_type]
 
     model = ClipCaptionPrefix(prefix_length=prefix_length, prefix_size=prefix_dim,
-                                  num_layers=args.num_layers)
+                              num_layers=args.num_layers)
     print("Train only prefix")
+    train_size = int(len(dataset) * 0.9)
+    train_set, test_set = torch.utils.data.random_split(dataset, [train_size, len(dataset) - train_size])
+    train(train_set, model, args, output_dir=args.out_dir, output_prefix=args.prefix)
+    model = ClipCaptionModel(prefix_length=prefix_length, prefix_size=prefix_dim,
+                              num_layers=args.num_layers)
+    model_path = 'msv_train/msv_prefix-099.pt'
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    test(model,test_set,prefix_length,tokenizer)
 
 
-    train(dataset, model, args, output_dir=args.out_dir, output_prefix=args.prefix)
+
+
 
 if __name__ == '__main__':
     main()
