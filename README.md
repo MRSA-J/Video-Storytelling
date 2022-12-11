@@ -59,7 +59,9 @@ Afterwards, we use the same method described in [ClipCap: CLIP Prefix for Image 
 
 The intuition is to transform image clips into embeddings, trying to capture the information of image clips by adding a prefix to caption and perform multi-head attention on the [prefix+fixed word embedding] so that we could train a prefix based on transformer results to capture the media information. This prefix training is the prefix embeddings, we use the GPT2 model to generate sentences from [prefix +fixed tokenize captions embeddings]. Then, after removing the prefix, we get the sentence we want. 
 
-Our modified model structure looks like:...
+Our modified model structure looks like:
+
+![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/Model%20Structure.png)
 
 ### Metrics
 We plan to test our video caption model on the test dataset of uncaptioned videos to generate their captions. We evaluate the performance of our model on the similarity of the generated sentences and standard answers. Specifically, We think the n-gram BLEU score is an appropriate metric to evaluate the accuracy of our captions. The baseline model (Vision Transformer) can achieve 68.4 1-gram BLEU score and 50.7 5-gram BLEU score. We hope to improve the performance in some specific subjects, to achieve higher BLEU scores than the baseline model.
