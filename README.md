@@ -63,6 +63,8 @@ Our modified model structure looks like:
 
 ![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/Model%20Structure.png)
 
+The whole process of this model is shown above. We preprocess videos into image embeddings. And then we concatenate image embedding with prefix embeddings. Then we feed such combinations into the Feature Mapper model to allow prefix embeddings gaining enough visual information. Then, we only maintain the prefix embedding parts and feed them into the GTP-2 model to generate the final predictions.
+
 ### Metrics
 We plan to test our video caption model on the test dataset of uncaptioned videos to generate their captions. We evaluate the performance of our model on the similarity of the generated sentences and standard answers. Specifically, We think the n-gram BLEU score is an appropriate metric to evaluate the accuracy of our captions. The baseline model (Vision Transformer) can achieve 68.4 1-gram BLEU score and 50.7 5-gram BLEU score. We hope to improve the performance in some specific subjects, to achieve higher BLEU scores than the baseline model.
 
@@ -71,9 +73,9 @@ We plan to test our video caption model on the test dataset of uncaptioned video
 | ----------------------   | ----------- |----------- |----------- |----------- |
 | Video ID          |  `0bSz70pYAP0_5_15`  | `-vg3vR86fu0_1_6` | `60x_yxy7Sfw_1_7`| `9HDUADeA2xg_3_31` |
 | Sample Image Frame |![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/sample%20video%20image/0bSz70pYAP0_5_15/0bSz70pYAP0_5_15image10.jpg)|![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/sample%20video%20image/-vg3vR86fu0_1_6/-vg3vR86fu0_1_6image4.jpg) | ![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/sample%20video%20image/60x_yxy7Sfw_1_7/60x_yxy7Sfw_1_7image5.jpg)|![](https://raw.githubusercontent.com/MRSA-J/Youtube-Teller/main/readme%20image/sample%20video%20image/9HDUADeA2xg_3_31/9HDUADeA2xg_3_31image13.jpg)|  
-| All Image Frame | | | | |
+| All Image Frame |[Plane video image frame](https://github.com/MRSA-J/Youtube-Teller/tree/main/readme%20image/sample%20video%20image/0bSz70pYAP0_5_15) |[Man riding image frame](https://github.com/MRSA-J/Youtube-Teller/tree/main/readme%20image/sample%20video%20image/-vg3vR86fu0_1_6)|[Man watch video of woman image frame](https://github.com/MRSA-J/Youtube-Teller/tree/main/readme%20image/sample%20video%20image/60x_yxy7Sfw_1_7)|[Doggie playing image frame](https://github.com/MRSA-J/Youtube-Teller/tree/main/readme%20image/sample%20video%20image/9HDUADeA2xg_3_31)|
 | Sample Ground Truth Sentence|an airplane is flying in a wide circular pattern.|a guy on a bicycle who tries to jump his bike on a wooden ramp.|a man seated is watching and admiring the image of a woman on the screen of his laptop.| a puppy is playing with a ball.|   
-| All Ground Truth Sentences|  |             |   |                |   
+| All Ground Truth Sentences|[Plane video captions](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/0bSz70pYAP0_5_15.txt) |[Man riding captions](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/-vg3vR86fu0_1_6.txt)|[Man watch video of woman captions](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/60x_yxy7Sfw_1_7.txt) | [Doggie playing captions](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/9HDUADeA2xg_3_31.txt) |   
 | Single                           | a flying airplane flying over a lake.| a man is riding a motorcycle. | a woman is dancing.| a baby is walking on a rug. |   
 | Mean                            |  a plane is flying.  | a man is driving a car.   | a man is talking on a computer. | a cat is playing with a toy.    | 
 | Sequential                   |  a plane is flying. |a man is riding a motorcycle.|a man is talking to a woman.| a cat is playing with a toy.| 
