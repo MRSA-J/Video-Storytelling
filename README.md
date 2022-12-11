@@ -57,7 +57,7 @@ Afterwards, we use the same method described in [ClipCap: CLIP Prefix for Image 
 
 ![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/ClipCap%20Model.png)
 
-The intuition is to transform image clips into embeddings, trying to capture the information of image clips by adding a prefix to caption and perform multi-head attention on the [prefix+fixed word embedding] so that we could train a prefix based on transformer results to capture the media information. This prefix training is the prefix embeddings, we use the GPT2 model to generate sentences from [prefix +fixed tokenize captions embeddings]. Then, after removing the prefix, we get the sentence we want. 
+The intuition is to encode images information into CLIP(Contrastive Language-Image Pre-Training) embeddings space, “CLIP is designed to impose a shared representation for both images and text prompts. It is trained over a vast number of images and textual descriptions using a contrastive loss. Hence, its visual and textual representations are well correlated.” Then try to capture the information of the image by adding/concatenating a prefix to the (front of  the) caption, this prefix is gained by applying a **mapping network** over the CLIP embedding. The size of it is fixed. And then perform multi-head attention on the [prefix+fixed word embedding] so that we could train a simple mapping network. Researchers have the choice to choose whether they want to train CLIP and language models or keep it frozen. Training a sequence to sequence mapping model is sufficient to finish this task and generate good results. Then, we use the GPT2 model to generate sentence prediction from [prefix embeddings]. And then we translate that prediction into richful sentence.
 
 Our modified model structure looks like:
 
@@ -69,12 +69,12 @@ We plan to test our video caption model on the test dataset of uncaptioned video
 ### Our Generation Examples
 | Video                         | 1                 |2             | 3               | 4               |
 | ----------------------   | ----------- |----------- |----------- |----------- |
-| Video ID          |  `HkpUWzNNVt4_20_30`  | `RMznbCn5sQs_0_10` | `aM-RcQj0a7I_37_55`| `R8FDJgVW3Vc_0_4` |
+| Video ID          |  `0bSz70pYAP0_5_15`  | `9HDUADeA2xg_3_31` | `60x_yxy7Sfw_1_7`| `-vg3vR86fu0_1_6` |
 | Example Image Frame |![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/HkpUWzNNVt4_20_30.jpg)|![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/RMznbCn5sQs_0_10.jpg) | ![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/aM-RcQj0a7I_37_55.jpg)|![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/sample%20video%20image/R8FDJgVW3Vc_0_4.jpg)|   
-| Ground Truth Sentence| two couples are interacting.  | zebra are running in an enclosed area.              | chicken is being stirred in boiled.      | a woman is tapping her nails.                 |   
-| Single                           | two men are talking on a cell phone. | a tiger is walking. | a man is stirring a pot of water. | someone is peeling a pencil. |   
-| Mean                            |  a woman is talking to a man.  | a wild animal is walking on a grassy area.   | a woman is stirring a large pot of water.  | a woman is applying a pencil to a nail.    | 
-| Sequential                   |                |               |                  |                   | 
+| Ground Truth Sentence|  |             |   |                |   
+| Single                           | a flying airplane flying over a lake.| a man is riding a motorcycle. | a woman is dancing.| a baby is walking on a rug. |   
+| Mean                            |  a plane is flying.  | a man is driving a car.   | a man is talking on a computer. | a cat is playing with a toy.    | 
+| Sequential                   |  a plane is flying. |a man is riding a motorcycle.|a man is talking to a woman.| a cat is playing with a toy.| 
 
 As above, single, mean, sequential means different preprocessing methods and how image frames are selected and passed to the model. We will analyze this result in our report.
 
