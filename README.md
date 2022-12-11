@@ -10,7 +10,9 @@ Our original plan was to focus on cooking activity - caption paring dataset and 
 Download both the `Microsoft Research Video Description Corpus` and `YouTubeClips.tar` from the above link.
 
 #### Form
-The Video is named using its id: For example: `-4wsuPCjDBc_5_15` where `_5_15` means from the 5th second to the 10th second
+The Video is named using its id: For example: `-4wsuPCjDBc_5_15` where `_5_15` means from the 5th second to the 10th second.
+
+![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/video%20form.png)
 
 The Description txt is in the following form: <br>
 ```
@@ -42,6 +44,8 @@ This helps us build our training/testing/validation dataset
 We choose to treat this task as a sequence-to-sequence generation task.<br> 
 
 Firstly we use the `cv2` package to help us turn video into a sequence of image frames. We set the frameRate to be 1, that means 1s per image frame. We choose this setting as our videos in our dataset are mainly 5s or 10s. We think 1s per image frame is enough for our training. And since our dataset is already very big, we want to make our lives easier by limiting the # of images that the video can be turned into. Feel free to make a larger image frame set corresponding to the video if you have more time. <br>
+
+![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/video-image.png)
 
 Then, we use 3 different ways to process our image frames, so that it can be put into the video. Below are the 3 ways of input (and we will justify our choice in our report). We make such decision mainly based on the feature of our dataset:
 
