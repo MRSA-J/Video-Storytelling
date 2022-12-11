@@ -510,7 +510,7 @@ def test(model,test_set,prefix_length,tokenizer):
         print(generated_text_prefix)
         all_data.append({'video_name':video,'video_id':id,'pred_sentence':generated_text_prefix})
         id+=1
-    with open('save_test_data_single.pkl','wb') as fwb:
+    with open('data/save_test_data_mean.pkl', 'wb') as fwb:
         pickle.dump(all_data,fwb)
 
 
@@ -521,7 +521,7 @@ def test(model,test_set,prefix_length,tokenizer):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data', default='save_dataset_single.pkl')
+    parser.add_argument('--data', default='save_dataset_mean.pkl')
     parser.add_argument('--out_dir', default='./checkpoints')
     parser.add_argument('--prefix', default='msv_prefix', help='prefix for saved filenames')
     parser.add_argument('--epochs', type=int, default=10)
@@ -552,7 +552,7 @@ def main():
     #train(train_set,val_set, model, args, output_dir=args.out_dir, output_prefix=args.prefix,prefix_length=prefix_length)
     model = ClipCaptionModel(prefix_length=prefix_length, prefix_size=prefix_dim,
                               num_layers=args.num_layers,clip_length=prefix_length)
-    model_path = 'msv_train_single/msv_prefix-025.pt'
+    model_path = 'msv_train_mean/msv_prefix-025.pt'
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     test(model,test_set,prefix_length,tokenizer)
