@@ -57,7 +57,7 @@ The model is inspired by the idea of [ClipCap: CLIP Prefix for Image Captioning]
 
 ![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/ClipCap%20Model.png)
 
-In our model we applied the Transformer-encoder Mapper model structure to encode image informance into embedding space, so that allows the GPT-2 suitable for this special task without training. The CLIP model is designed to impose a shared representation for both images and texts. After training over a vast number of images and textual descriptions using the cross entropy loss, the visual feature of CLIP and textual representations of GPT-2 are well correlated. Therefore, the fine-tuned Mapper structure allows prefix embeddings to capture the visual information, and effectively generate the suitable input for the GPT-2 model to correctly predict.
+In our model we applied the Transformer-encoder Mapper model structure to encode image information into embedding space, so that the GPT-2 is suitable for this special task without training. The CLIP model is designed to impose a shared representation for both images and texts. After training over a vast number of images and textual descriptions using the cross entropy loss, the visual feature of CLIP and textual representations of GPT-2 are well correlated. Therefore, the fine-tuned Mapper structure allows prefix embeddings to capture the visual information, and effectively generate the suitable input for the GPT-2 model to correctly predict. <br>
 
 Our modified model structure looks like:
 
@@ -103,7 +103,7 @@ We plan on working equally across X aspects of the project:
   - Video/image CLIP encoder: Yuan Zang
   - Multi-head attention Transformer: Yuan Zang, Chen Wei
   - Transformer with Positional Encoding to encode position information: Yuan Zang
-4. Evaluation (BLEU, METEOR, CIDEr, SPICE) and and Visualization: Yunhao Luo
+4. Evaluation (BLEU, METEOR, CIDEr, ROUGE) and and Visualization: Yunhao Luo
 5. Model Training: Yuan Zang
 6. Ablation study: Chen Wei
 7. Write the report and make the poster: Chen Wei
