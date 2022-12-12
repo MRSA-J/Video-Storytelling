@@ -99,12 +99,12 @@ Chen Wei (cwei24), Yuan Zang (yzang6), Yunhao Luo (yluo73)
 We plan on working equally across X aspects of the project:
 1. Preprocess the data: Chen Wei, Yuan Zang
 2. Model Architecture
-  - Caption Encoder (Use GPT2 pretrained model and add padding, mask): Chen Wei, Yuan Zang
-  - Video/image clips encoder: Yuan Zang
+  - Caption Generater (Use GPT2 pretrained model): Chen Wei, Yuan Zang
+  - Video/image CLIP encoder: Yuan Zang
   - Multi-head attention Transformer: Yuan Zang, Chen Wei
   - Transformer with Positional Encoding to encode position information: Yuan Zang
-4. Evaluation (BLEU, METEOR, CIDEr, SPICE): Yunhao Luo
-5. Fine-tuning and Visualization: Yuan Zang
+4. Evaluation (BLEU, METEOR, CIDEr, SPICE) and and Visualization: Yunhao Luo
+5. Model Training: Yuan Zang
 6. Ablation study: Chen Wei
 7. Write the report and make the poster: Chen Wei
 
