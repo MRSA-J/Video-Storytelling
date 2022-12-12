@@ -1,7 +1,7 @@
 ### Youtube Teller -  a  Video StoryTelling model to extract people's daily activity
 
 ### Description
-Video Description/Storytelling is a complicated task. For this final project, we are trying to solve a video-caption problem which specifically focuses on people's daily activities.
+Video Description/Storytelling is a complicated task which involves automatically captioning a video by understanding the action and event in the video which can help in the retrieval of the video efficiently through text. For this final project, we are trying to solve a video-caption problem which specifically focuses on video captioning tasks on Youtube video.
 Our original plan was to focus on cooking activity - caption paring dataset and generate a cooking guide from that dataset. But after we realize that that dataset is really hard to be preprocessed as well as with the previous work related to it is very little, we switch to this [people's daily activities video caption pairing dataset](https://www.cs.utexas.edu/users/ml/clamp/videoDescription/).
 
 ### DataSet
@@ -53,7 +53,7 @@ In the next step, we used 3 different strategies to process our image frames, so
 2. Turn our video into `mean image` frames. That means the mean of every image frame corresponding to that video.
 3. Turn our video into `sequential image` frames. And we will use positional encoding afterwards in our transformer part to deal with it.
 
-Afterwards, we use the same method described in [ClipCap: CLIP Prefix for Image Captioning](https://arxiv.org/pdf/2111.09734.pdf). Their model structure is like the below. We removed the pretrained COCO dataset’s weight and applied our own creativity (positional encoding) on the model.We make this choice, as we believe using prefix training to capture the video/image feature is a very lighted way of training and can achieve good results without the need of managing to "train too much". And instead of passing the image, we pass the preprocess video (image frames) into the CLIP model.
+The model is inspired by the idea of [ClipCap: CLIP Prefix for Image Captioning](https://arxiv.org/pdf/2111.09734.pdf). Their model structure is like the below. We removed the pretrained COCO dataset’s weight and applied our own creativity (positional encoding) on the model.We make this choice, as we believe using prefix training to capture the video/image feature is a very lighted way of training and can achieve good results without the need of managing to "train too much". And instead of passing the image, we pass the preprocess video (image frames) into the CLIP model.
 
 ![](https://github.com/MRSA-J/Youtube-Teller/blob/main/readme%20image/ClipCap%20Model.png)
 
@@ -65,19 +65,10 @@ Our modified model structure looks like:
 
 The whole process of this model is shown above. We preprocess videos into image embeddings. And then we concatenate image embedding with prefix embeddings. Then we feed such combinations into the Feature Mapper model to allow prefix embeddings gaining enough visual information. Then, we only maintain the prefix embedding parts and feed them into the GTP-2 model to generate the final predictions.
 
-### Metrics
-We plan to test our video caption model on the test dataset of uncaptioned videos to generate their captions. We evaluate the performance of our model on the similarity of the generated sentences and standard answers. Specifically, We think the n-gram BLEU score is an appropriate metric to evaluate the accuracy of our captions. The baseline model (Vision Transformer) can achieve 68.4 1-gram BLEU score and 50.7 5-gram BLEU score. We hope to improve the performance in some specific subjects, to achieve higher BLEU scores than the baseline model.
+### Evaluation Metrics
+We plan to test our video caption model on the test dataset of uncaptioned videos to generate their captions. We evaluate the performance of our model on the similarity of the generated sentences and standard answers. Specifically, we adopt 4 metrics to evaluate the accuracy of our captions, namely, BLEU, CIDEr, METEOR, and Rouge. 
 
-
-
-| Method       |      BLEU      |   CIDEr             | METEOR               | ROUGE               |
-| ----------------------   | ----------- |----------- |----------- |----------- |
-| Sequence   |  0.507  | 0.549 |  0.297 |  0.641 |
-| Mean       |  0.520  | 0.584 |  0.302 |  0.647 |
-| Single     |  0.487  | 0.465 |  0.281 |  0.630 |
-
-
-
+The baseline model (Vision Transformer) can achieve 68.4 1-gram BLEU score and 50.7 5-gram BLEU score. We hope to improve the performance in some specific subjects, to achieve higher BLEU scores than the baseline model.
 
 ### Our Generation Examples
 | Video                         | 1                 |2             | 3               | 4               |
@@ -91,7 +82,15 @@ We plan to test our video caption model on the test dataset of uncaptioned video
 | Mean                            |  a plane is flying.  | a man is driving a car.   | a man is talking on a computer. | a cat is playing with a toy.    | 
 | Sequential                   |  a plane is flying. |a man is riding a motorcycle.|a man is talking to a woman.| a cat is playing with a toy.| 
 
-As above, single, mean, sequential means different preprocessing methods and how image frames are selected and passed to the model. We will analyze this result in our report.
+As above, single, mean, sequential means different preprocessing methods and how image frames are selected and passed to the model. 
+
+| Method       |      BLEU      |   CIDEr             | METEOR               | ROUGE               |
+| ----------------------   | ----------- |----------- |----------- |----------- |
+| Sequence   |  0.507  | 0.549 |  0.297 |  0.641 |
+| Mean       |  0.520  | 0.584 |  0.302 |  0.647 |
+| Single     |  0.487  | 0.465 |  0.281 |  0.630 |
+
+We will analyze this result in our report.
 
 ### Contributor
 Chen Wei (cwei24), Yuan Zang (yzang6), Yunhao Luo (yluo73)
