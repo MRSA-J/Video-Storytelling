@@ -66,6 +66,17 @@ Our modified model structure looks like:
 ### Metrics
 We plan to test our video caption model on the test dataset of uncaptioned videos to generate their captions. We evaluate the performance of our model on the similarity of the generated sentences and standard answers. Specifically, We think the n-gram BLEU score is an appropriate metric to evaluate the accuracy of our captions. The baseline model (Vision Transformer) can achieve 68.4 1-gram BLEU score and 50.7 5-gram BLEU score. We hope to improve the performance in some specific subjects, to achieve higher BLEU scores than the baseline model.
 
+
+
+| Method       |      BLEU      |   CIDEr             | METEOR               | ROUGE               |
+| ----------------------   | ----------- |----------- |----------- |----------- |
+| Sequence   |  0.507  | 0.549 |  0.297 |  0.641 |
+| Mean       |  0.520  | 0.584 |  0.302 |  0.647 |
+| Single     |  0.487  | 0.465 |  0.281 |  0.630 |
+
+
+
+
 ### Our Generation Examples
 | Video                         | 1                 |2             | 3               | 4               |
 | ----------------------   | ----------- |----------- |----------- |----------- |

@@ -6,6 +6,7 @@ import os
 VIDEO_PATH = './data/YouTubeClips/*.avi'
 
 
+
 '''Convert Video to Image'''
 # Input: video name
 # Output: Create a image folder and put the image generated from video to the folder
