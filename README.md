@@ -86,9 +86,10 @@ As above, single, mean, sequential means different preprocessing methods and how
 
 | Method       |      BLEU      |   CIDEr             | METEOR               | ROUGE               |
 | ----------------------   | ----------- |----------- |----------- |----------- |
-| Sequence   |  0.507  | 0.549 |  0.297 |  0.641 |
-| Mean       |  0.520  | 0.584 |  0.302 |  0.647 |
 | Single     |  0.487  | 0.465 |  0.281 |  0.630 |
+| Sequence   |  0.507  | 0.549 |  0.297 |  0.641 |
+| Mean       |  **0.520**  | **0.584** |  **0.302** |  **0.647** |
+
 
 We will analyze this result in our report.
 
