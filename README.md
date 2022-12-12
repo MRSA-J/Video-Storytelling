@@ -2,7 +2,7 @@
 
 ### Description
 Video Description/Storytelling is a complicated task which involves automatically captioning a video by understanding the action and event in the video which can help with the retrieval of the video efficiently through text task. For this final project, we are trying to solve a video-caption problem which specifically focuses on video captioning tasks on Youtube video. <br>
-Our original plan was to focus on cooking activity - caption paring dataset and generate a cooking guide from that dataset. But after we realize that that dataset is really hard to be preprocessed as well as with the previous work related to it is very little, we switch to this [people's daily activities video caption pairing dataset](https://www.cs.utexas.edu/users/ml/clamp/videoDescription/).
+Our original plan was to focus on cooking activity - caption paring dataset and generate a cooking guide from that dataset. But after we realize that that dataset is really hard to be preprocessed as well as with the previous work related to it is very little, we switch to this [YoutubeClips dataset](https://www.cs.utexas.edu/users/ml/clamp/videoDescription/).
 
 ### DataSet
 [YouTubeClips dataset](https://www.cs.utexas.edu/users/ml/clamp/videoDescription/)
